@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>btcintel - investigative leads</title>
+<style>
+:root{--bg:#E6EBF1;--panel:#fff;--ink:#17212B;--muted:#5A6978;--line:#D3DBE4;--accent:#2F49D1;--lo:#2E8B85;--mid:#E0A030;--hi:#B3263E;--chip:#EEF2F7}
+@media (prefers-color-scheme:dark){:root{--bg:#10171F;--panel:#18222D;--ink:#E7EDF3;--muted:#93A2B1;--line:#2A3745;--accent:#7C93FF;--chip:#202D3A}}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{font:14px/1.45 "Segoe UI","Helvetica Neue","Noto Sans",Arial,sans-serif;background:var(--bg);color:var(--ink);display:flex;flex-direction:column}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:12px}
+header{display:flex;align-items:center;gap:20px;padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap}
+header h1{font-size:16px;margin:0;font-weight:650}
+.stat{display:flex;flex-direction:column;line-height:1.2}.stat b{font-size:15px;font-variant-numeric:tabular-nums}.stat span{color:var(--muted);font-size:12px}
+.tabs{margin-left:auto;display:flex;gap:4px}.tabs button{border:1px solid var(--line);background:var(--chip);color:var(--ink);padding:5px 12px;border-radius:6px;cursor:pointer;font:inherit}
+.tabs button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible,.item:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+main{flex:1;min-height:0;display:grid;grid-template-columns:330px minmax(300px,1fr) 400px;gap:10px;padding:10px}
+.pane{background:var(--panel);border:1px solid var(--line);border-radius:8px;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+.pane h2{font-size:13px;margin:0;padding:10px 12px;border-bottom:1px solid var(--line);font-weight:650}
+.filters{display:flex;gap:6px;padding:8px 12px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.filters input,.filters select{font:inherit;padding:4px 6px;border:1px solid var(--line);border-radius:5px;background:var(--panel);color:var(--ink)}
+.filters input[type=search]{flex:1;min-width:90px}
+#list{overflow:auto;flex:1}
+.item{padding:9px 12px;border-bottom:1px solid var(--line);cursor:pointer;display:grid;grid-template-columns:34px 1fr;gap:2px 8px}
+.item:hover{background:var(--chip)}.item.sel{background:var(--chip);box-shadow:inset 3px 0 0 var(--accent)}
+.rank{color:var(--muted);font-variant-numeric:tabular-nums;grid-row:span 3}
+.item .t{display:flex;gap:6px;align-items:center;justify-content:space-between}
+.chip{font-size:11px;padding:1px 6px;border-radius:9px;background:var(--chip);border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.hl{font-size:13px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.bar{height:4px;border-radius:2px;background:var(--line);overflow:hidden}.bar i{display:block;height:100%}
+#graphwrap{flex:1;min-height:0;position:relative}svg{width:100%;height:100%;display:block}
+.legend{position:absolute;left:10px;bottom:8px;font-size:12px;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap;background:color-mix(in srgb,var(--panel) 88%,transparent);padding:4px 8px;border-radius:6px}
+#detail{overflow:auto;padding:0 14px 14px}
+.big{font-size:34px;font-weight:650;font-variant-numeric:tabular-nums;line-height:1}
+.sec{margin-top:14px}.sec h3{font-size:12.5px;margin:0 0 6px;color:var(--muted);font-weight:600}
+.reason{margin-bottom:9px}.reason .r1{display:flex;justify-content:space-between;gap:8px}.reason .lab{font-size:13px}
+.reason .val{white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:600}
+.reason .b{height:6px;border-radius:3px;background:var(--line);margin-top:3px}.reason .b i{display:block;height:100%;border-radius:3px;background:var(--accent)}
+.reason .s{font-size:11.5px;color:var(--muted)}
+table{border-collapse:collapse;width:100%}td,th{padding:3px 6px;text-align:left;border-bottom:1px solid var(--line);font-size:12.5px;vertical-align:top}th{color:var(--muted);font-weight:600}
+.path{display:flex;flex-wrap:wrap;gap:4px;align-items:center}.path span.n{padding:1px 7px;border-radius:9px;background:var(--chip);border:1px solid var(--line)}
+.note{font-size:12px;color:var(--muted)}
+.tx{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#overview{display:none;grid-column:1/-1;overflow:auto;padding:14px}.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.card{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--panel)}.card b{font-size:22px;font-variant-numeric:tabular-nums}
+.empty{padding:24px;color:var(--muted)}
+@media(max-width:1100px){main{grid-template-columns:1fr;overflow:auto}#graphwrap{min-height:340px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head><body>
+<header><h1>btcintel</h1><div id="stats" style="display:flex;gap:20px;flex-wrap:wrap"></div>
+<div class="tabs"><button id="tA" class="on">Leads</button><button id="tO">Pipeline report</button></div></header>
+<main id="main">
+ <section class="pane" id="qpane"><h2>Ranked leads</h2>
+  <div class="filters"><select id="ftype"></select><input id="fq" type="search" placeholder="Search entity, txid, headline" aria-label="Search leads"><label class="note">min score <input id="fmin" type="number" min="0" max="1" step="0.05" value="0" style="width:60px"></label></div>
+  <div id="list" role="listbox" aria-label="Ranked leads"></div></section>
+ <section class="pane"><h2 id="gtitle">Link analysis</h2><div id="graphwrap"><svg id="svg" role="img" aria-label="Link analysis graph"></svg>
+  <div class="legend"><span>&#9679; entity (colour = risk)</span><span>&#9670; known-bad seed</span><span>&#9632; originating IP</span><span>ring = focus</span></div></div></section>
+ <section class="pane"><h2>Why this was flagged</h2><div id="detail"></div></section>
+ <section class="pane" id="overview"></section>
+</main>
+<script>
+const D = __DATA__;
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const TYPES = {ENTITY_RISK:"Entity risk",LAUNDER_CHAIN:"Laundering chain",ENTITY_ANOMALY:"Entity anomaly",TX_ANOMALY:"Tx anomaly",SEED_EXPANSION:"Seed expansion"};
+const ramp = v => { v = Math.max(0, Math.min(1, v)); const c = [[46,139,133],[224,160,48],[179,38,62]]; const k = v < .5 ? 0 : 1, f = v < .5 ? v * 2 : (v - .5) * 2;
+  const m = c[k].map((x, i) => Math.round(x + (c[k + 1][i] - x) * f)); return `rgb(${m})`; };
+const band = s => s >= .9 ? "High" : s >= .7 ? "Medium" : "Low";
+let sel = null; const bySubject = {}; D.alerts.forEach(a => { if (a.type.startsWith("ENTITY") || a.type == "SEED_EXPANSION") (bySubject[a.subject] ??= a); });
+
+function init() {
+  const s = D.summary;
+  $("#stats").innerHTML = [["Transactions", s.unique_tx.toLocaleString()], ["Addresses", s.unique_addresses.toLocaleString()], ["Entities", s.entities.toLocaleString()],
+    ["Seed wallets", s.seeds.toLocaleString()], ["Leads", D.alerts.length.toLocaleString()]].map(([k, v]) => `<div class="stat"><b>${v}</b><span>${k}</span></div>`).join("");
+  const counts = {}; D.alerts.forEach(a => counts[a.type] = (counts[a.type] || 0) + 1);
+  $("#ftype").innerHTML = `<option value="ALL">All types (${D.alerts.length})</option>` + Object.keys(TYPES).filter(k => counts[k]).map(k => `<option value="${k}">${TYPES[k]} (${counts[k]})</option>`).join("");
+  ["ftype", "fq", "fmin"].forEach(i => $("#" + i).addEventListener("input", renderList));
+  $("#tA").onclick = () => tab(true); $("#tO").onclick = () => tab(false);
+  renderOverview(); renderList(); const f = D.alerts[0]; if (f) select(f.id);
+}
+function tab(a) { $("#tA").classList.toggle("on", a); $("#tO").classList.toggle("on", !a); ["#qpane", "#qpane+section", "#qpane+section+section"].forEach(q => $(q).style.display = a ? "" : "none"); $("#overview").style.display = a ? "none" : "block"; if (a && sel) drawGraph(sel); }
+function filtered() {
+  const t = $("#ftype").value, q = $("#fq").value.toLowerCase(), m = +$("#fmin").value || 0;
+  return D.alerts.filter(a => (t == "ALL" || a.type == t) && a.score >= m && (!q || (a.subject + " " + a.headline + " " + (a.evidence?.txid || "") + " " + (a.evidence?.txids || []).join(" ")).toLowerCase().includes(q)));
+}
+function renderList() {
+  const L = filtered(); const el = $("#list");
+  if (!L.length) { el.innerHTML = `<div class="empty">No leads match these filters. Lower the minimum score or clear the search.</div>`; return; }
+  el.innerHTML = L.map(a => `<div class="item ${sel && sel.id == a.id ? "sel" : ""}" tabindex="0" role="option" data-id="${a.id}">
+    <div class="rank">${a.rank}</div><div class="t"><b class="mono">${esc(a.subject)}</b><span class="chip">${TYPES[a.type]}</span></div>
+    <div class="hl">${esc(a.headline)}</div><div class="bar"><i style="width:${(a.score * 100).toFixed(0)}%;background:${ramp(a.score)}"></i></div></div>`).join("");
+  el.querySelectorAll(".item").forEach(e => { e.onclick = () => select(e.dataset.id); e.onkeydown = ev => { if (ev.key == "Enter" || ev.key == " ") { ev.preventDefault(); select(e.dataset.id); } }; });
+}
+function select(id) { sel = D.alerts.find(a => a.id == id); renderList(); renderDetail(sel); drawGraph(sel); }
+function renderDetail(a) {
+  const ev = a.evidence || {}; const mx = Math.max(...a.reasons.map(r => Math.abs(r.contribution)), 1e-9);
+  let h = `<div class="sec" style="display:flex;gap:14px;align-items:flex-end"><div><div class="big" style="color:${ramp(a.score)}">${(a.score * 100).toFixed(0)}</div><div class="note">${band(a.score)} confidence</div></div>
+    <div><b>${esc(a.subject)}</b> <span class="chip">${TYPES[a.type]}</span><div class="note">priority ${a.priority.toFixed(2)} &middot; ${a.btc} BTC involved &middot; lead ${a.id}</div></div></div>
+    <p style="margin:10px 0 0">${esc(a.headline)}</p>`;
+  if (a.reasons.length) {
+    h += `<div class="sec"><h3>Top contributing factors</h3>` + a.reasons.map(r => `<div class="reason"><div class="r1"><span class="lab">${esc(r.label)}</span><span class="val">${esc(r.shown)}</span></div>
+      <div class="b"><i style="width:${(Math.abs(r.contribution) / mx * 100).toFixed(0)}%"></i></div>
+      <div class="s">adds ${r.contribution >= 0 ? "+" : ""}${r.contribution.toFixed(3)} to the score${r.percentile != null ? " &middot; higher than " + r.percentile + "% of the population" : ""}</div></div>`).join("");
+    const e = a.explain; h += `<div class="note">Shapley attribution: baseline ${e.base.toFixed(3)} &rarr; model output ${e.prediction.toFixed(3)}. Only the strongest positive factors are listed.</div></div>`;
+  }
+  if (ev.seed_path) { const p = ev.seed_path; h += `<div class="sec"><h3>Link to known-bad wallets (${p.direction})</h3><div class="path">` +
+    p.path.map((n, i) => `<span class="n mono">E${n}</span>` + (i < p.hops.length ? `<span class="note">${p.hops[i].btc} BTC &rarr;</span>` : "")).join("") + `</div></div>`; }
+  if (ev.origin_ips && ev.origin_ips.length) h += `<div class="sec"><h3>Network origin (first relay seen by sensors)</h3><table><tr><th>IP</th><th>Txs</th><th>Where</th><th>Class</th></tr>` +
+    ev.origin_ips.map(i => `<tr><td class="mono">${esc(i.ip)}</td><td>${i.txs}</td><td>${esc(i.country)} &middot; ${esc(i.org)}</td><td>${esc(i.net_class)}</td></tr>`).join("") + `</table></div>`;
+  if (a.type == "ENTITY_RISK" || a.type == "ENTITY_ANOMALY" || a.type == "SEED_EXPANSION") h += `<div class="sec"><h3>Ownership cluster</h3><div class="note">${ev.addresses} addresses (${ev.seed_addresses} on seed lists) &middot; ${ev.sent_txs} sent / ${ev.recv_txs} received txs &middot; ${ev.btc_in} BTC in, ${ev.btc_out} BTC out &middot; active ${esc(ev.first_active)} to ${esc(ev.last_active)}</div>
+    <div class="mono" style="margin-top:4px">${(ev.sample_addresses || []).map(x => `<span class="tx">${esc(x)}</span>`).join("")}</div></div>`;
+  if (a.type == "LAUNDER_CHAIN") h += `<div class="sec"><h3>Chain</h3><div class="note">${ev.hops} hops from ${esc(ev.first_seen)} to ${esc(ev.last_seen)}, starting with ${ev.start_btc} BTC, owned by ${esc(ev.entity)}</div></div>`;
+  if (a.type == "TX_ANOMALY") h += `<div class="sec"><h3>Transaction</h3><div class="mono"><span class="tx">${esc(ev.txid)}</span></div><div class="note">first relayed ${esc(ev.first_seen)} from ${esc(ev.first_relay_ip)} (${esc(ev.country)}, ${esc(ev.net_class)}) &middot; ${ev.fee_rate} sat/vB</div></div>`;
+  const tx = ev.key_txids || ev.txids; if (tx && tx.length) h += `<div class="sec"><h3>${a.type == "LAUNDER_CHAIN" ? "Chain transactions" : "Key transactions"}</h3><div class="mono">${tx.slice(0, 8).map(t => `<span class="tx" title="${t}">${t}</span>`).join("")}</div></div>`;
+  if (ev.chains && ev.chains.length) h += `<div class="sec"><h3>Involved in chains</h3><div class="note">${ev.chains.join(", ")}</div></div>`;
+  $("#detail").innerHTML = h;
+}
+function drawGraph(a) {
+  const svg = $("#svg"); svg.innerHTML = ""; $("#gtitle").textContent = "Link analysis - " + a.subject;
+  if (!a.graph) { svg.innerHTML = `<text x="20" y="30" fill="currentColor" font-size="13">No neighbourhood graph for single-transaction leads. Search the txid in your block explorer or case tool.</text>`; return; }
+  const W = svg.clientWidth || 600, H = svg.clientHeight || 500;
+  const N = a.graph.nodes.map((n, i) => ({...n, x: W / 2 + 140 * Math.cos(i * 2.4), y: H / 2 + 140 * Math.sin(i * 2.4), vx: 0, vy: 0}));
+  const idx = Object.fromEntries(N.map((n, i) => [n.id, i])); const Lk = a.graph.links.map(l => ({...l, s: idx[l.source], t: idx[l.target]})).filter(l => l.s != null && l.t != null);
+  for (let it = 0; it < 300; it++) {
+    const k = 1 - it / 300;
+    for (let i = 0; i < N.length; i++) for (let j = i + 1; j < N.length; j++) { let dx = N[i].x - N[j].x, dy = N[i].y - N[j].y, d2 = dx * dx + dy * dy + 30, f = 2600 / d2; N[i].vx += dx * f; N[i].vy += dy * f; N[j].vx -= dx * f; N[j].vy -= dy * f; }
+    Lk.forEach(l => { const A = N[l.s], B = N[l.t]; let dx = B.x - A.x, dy = B.y - A.y, d = Math.hypot(dx, dy) + .01, f = (d - 110) * .02; A.vx += dx / d * f * 8; A.vy += dy / d * f * 8; B.vx -= dx / d * f * 8; B.vy -= dy / d * f * 8; });
+    N.forEach(n => { n.vx += (W / 2 - n.x) * .004; n.vy += (H / 2 - n.y) * .004; n.x += Math.max(-12, Math.min(12, n.vx)) * .12 * (0.3 + k); n.y += Math.max(-12, Math.min(12, n.vy)) * .12 * (0.3 + k); n.vx *= .6; n.vy *= .6; n.x = Math.max(30, Math.min(W - 30, n.x)); n.y = Math.max(30, Math.min(H - 40, n.y)); });
+  }
+  let s = `<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="#8896A5"/></marker></defs>`;
+  Lk.forEach(l => { const A = N[l.s], B = N[l.t], w = l.ip ? 1 : Math.max(1, Math.min(5, Math.log10(1 + l.btc * 100)));
+    s += `<line x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}" stroke="${l.ip ? "#2E8B85" : "#8896A5"}" stroke-width="${w}" ${l.ip ? 'stroke-dasharray="4 3"' : 'marker-end="url(#ar)"'} opacity=".75"><title>${l.ip ? l.ntx + " txs first relayed from this IP" : l.btc + " BTC in " + l.ntx + " tx"}</title></line>`; });
+  N.forEach(n => {
+    const r = n.kind == "ip" ? 8 : Math.max(7, Math.min(18, 6 + Math.log2(1 + n.n_addr) * 1.6)), col = n.kind == "ip" ? "#5F7F8F" : ramp(n.risk);
+    const target = bySubject[n.id]; let sh;
+    if (n.kind == "ip") sh = `<rect x="${n.x - r}" y="${n.y - r}" width="${2 * r}" height="${2 * r}" rx="3" fill="${col}"/>`;
+    else if (n.seed) sh = `<path d="M${n.x} ${n.y - r - 3}L${n.x + r + 3} ${n.y}L${n.x} ${n.y + r + 3}L${n.x - r - 3} ${n.y}z" fill="${col}" stroke="var(--ink)" stroke-width="1.5"/>`;
+    else sh = `<circle cx="${n.x}" cy="${n.y}" r="${r}" fill="${col}" ${n.hub ? 'stroke="var(--ink)" stroke-dasharray="2 2"' : ""}/>`;
+    if (n.kind == "focus") sh += `<circle cx="${n.x}" cy="${n.y}" r="${r + 6}" fill="none" stroke="var(--accent)" stroke-width="2.5"/>`;
+    s += `<g ${target ? `data-go="${target.id}" style="cursor:pointer"` : ""}>${sh}<text x="${n.x}" y="${n.y + r + 13}" text-anchor="middle" font-size="11" fill="currentColor" class="mono">${esc(n.label || n.id)}${n.kind == "ip" ? " " + esc(n.country) : ""}</text><title>${esc(n.id)}${n.kind != "ip" ? " - risk " + n.risk + ", " + n.n_addr + " addresses" + (n.hub ? " (exchange-like hub)" : "") : " - " + n.net}</title></g>`; });
+  svg.innerHTML = s; svg.querySelectorAll("[data-go]").forEach(g => g.onclick = () => select(g.dataset.go));
+}
+function renderOverview() {
+  const s = D.summary, m = D.metrics || {}; const c = (k, v) => `<div class="card"><b>${v}</b><div class="note">${k}</div></div>`;
+  let h = `<h2 style="border:0;padding:0 0 10px">Pipeline report</h2><div class="cards">${c("observation rows read", s.rows_in.toLocaleString())}${c("rows accepted", s.rows_ok.toLocaleString())}${c("rows rejected", s.rejected.toLocaleString())}${c("duplicate sightings dropped", s.duplicates)}${c("unique transactions", s.unique_tx.toLocaleString())}${c("entities after clustering", s.entities.toLocaleString())}</div>`;
+  h += `<div class="sec"><h3>Rejected rows by reason</h3><table>${Object.entries(s.reject_reasons).map(([k, v]) => `<tr><td>${esc(k)}</td><td>${v}</td></tr>`).join("")}</table></div>`;
+  h += `<div class="sec"><h3>Files ingested</h3><table>${Object.entries(s.files).map(([k, v]) => `<tr><td class="mono">${esc(k)}</td><td>${esc(JSON.stringify(v))}</td></tr>`).join("")}</table></div>`;
+  if (m.summary_rows) h += `<div class="sec"><h3>Model evaluation on held-out synthetic data (ground truth)</h3><table><tr><th>Task</th><th>Metric</th><th>Value</th></tr>${m.summary_rows.map(r => `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join("")}</table></div>`;
+  $("#overview").innerHTML = h;
+}
+init();
+</script></body></html>

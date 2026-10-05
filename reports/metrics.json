@@ -1,0 +1,281 @@
+{
+ "ingestion": {
+  "injected_bad_rows": 88,
+  "rejected": 88,
+  "injected_duplicates": 13,
+  "duplicates_dropped": 13
+ },
+ "mixing": {
+  "auc": 1.0,
+  "ap": 1.0,
+  "positives": 120,
+  "n": 15294,
+  "precision": 1.0,
+  "recall": 1.0
+ },
+ "clustering": {
+  "cioh_ungated": {
+   "all": {
+    "precision": 0.9982106101192978,
+    "recall": 0.4984464608914079,
+    "f1": 0.6648878430143174,
+    "pred_clusters": 20420,
+    "true_entities": 1129
+   },
+   "illicit_only": {
+    "precision": 0.9967065349280638,
+    "recall": 0.0622092394244293,
+    "f1": 0.11710913553091172,
+    "pred_clusters": 800,
+    "true_entities": 100
+   }
+  },
+  "cioh_coinjoin_gated": {
+   "all": {
+    "precision": 1.0,
+    "recall": 0.4984464608914079,
+    "f1": 0.6652843113191886,
+    "pred_clusters": 20865,
+    "true_entities": 1129
+   },
+   "illicit_only": {
+    "precision": 1.0,
+    "recall": 0.0622092394244293,
+    "f1": 0.11713179873701364,
+    "pred_clusters": 815,
+    "true_entities": 100
+   }
+  },
+  "cioh+ml_link+ip": {
+   "all": {
+    "precision": 0.957580949335389,
+    "recall": 0.6900330851943756,
+    "f1": 0.802084132503571,
+    "pred_clusters": 10157,
+    "true_entities": 1129
+   },
+   "illicit_only": {
+    "precision": 1.0,
+    "recall": 0.27466190630747594,
+    "f1": 0.4309564833597868,
+    "pred_clusters": 380,
+    "true_entities": 100
+   }
+  }
+ },
+ "chains": {
+  "model": {
+   "auc": 1.0,
+   "ap": 1.0,
+   "positives": 40,
+   "n": 1032
+  },
+  "length_only_baseline": {
+   "auc": 0.9217,
+   "ap": 0.3267,
+   "positives": 40,
+   "n": 1032
+  },
+  "tx_recall": 0.876,
+  "tx_false_flags": 0,
+  "ablation_no_fee_timing_ip_features": {
+   "auc": 0.9999,
+   "ap": 0.9988,
+   "positives": 40,
+   "n": 1032
+  }
+ },
+ "risk": {
+  "fused": {
+   "auc": 0.9998,
+   "ap": 0.9909,
+   "positives": 42,
+   "n": 2444
+  },
+  "taint_only": {
+   "auc": 0.9177,
+   "ap": 0.6155,
+   "positives": 42,
+   "n": 2444
+  },
+  "pagerank_fwd_only": {
+   "auc": 0.9453,
+   "ap": 0.6588,
+   "positives": 42,
+   "n": 2444
+  },
+  "hop_distance_only": {
+   "auc": 0.924,
+   "ap": 0.7574,
+   "positives": 42,
+   "n": 2444
+  },
+  "behaviour_only": {
+   "auc": 0.997,
+   "ap": 0.9496,
+   "positives": 42,
+   "n": 2444
+  },
+  "propagation_only": {
+   "auc": 0.9876,
+   "ap": 0.8643,
+   "positives": 42,
+   "n": 2444
+  },
+  "no_network_features": {
+   "auc": 0.9995,
+   "ap": 0.9783,
+   "positives": 42,
+   "n": 2444
+  }
+ },
+ "alerts": {
+  "entity_risk_alerts": 37,
+  "illicit_entity_recall": 0.881,
+  "precision_at": {
+   "precision@10": 1.0,
+   "precision@25": 1.0,
+   "precision@50": 1.0
+  },
+  "precision_by_score_band": {
+   "score>=0.9": {
+    "n": 31,
+    "precision": 1.0
+   },
+   "0.7-0.9": {
+    "n": 6,
+    "precision": 1.0
+   },
+   "0.5-0.7": {
+    "n": 0,
+    "precision": null
+   }
+  },
+  "illicit_entities_by_kind": {
+   "darknet_market": {
+    "entities": 8,
+    "flagged": 6
+   },
+   "layerer": {
+    "entities": 4,
+    "flagged": 4
+   },
+   "ransom_op": {
+    "entities": 5,
+    "flagged": 5
+   },
+   "vendor": {
+    "entities": 25,
+    "flagged": 22
+   }
+  },
+  "false_positive_kinds": {}
+ },
+ "summary_rows": [
+  [
+   "Ingestion",
+   "corrupted rows caught / injected",
+   "88 / 88"
+  ],
+  [
+   "Ingestion",
+   "duplicates dropped / injected",
+   "13 / 13"
+  ],
+  [
+   "CoinJoin detection",
+   "AUC / precision / recall",
+   "1.0 / 1.000 / 1.000"
+  ],
+  [
+   "Entity clustering",
+   "cioh_ungated: pairwise P / R (illicit R)",
+   "0.998 / 0.498 (0.062)"
+  ],
+  [
+   "Entity clustering",
+   "cioh_coinjoin_gated: pairwise P / R (illicit R)",
+   "1.000 / 0.498 (0.062)"
+  ],
+  [
+   "Entity clustering",
+   "cioh+ml_link+ip: pairwise P / R (illicit R)",
+   "0.958 / 0.690 (0.275)"
+  ],
+  [
+   "Laundering chains",
+   "AUC (model / length-only baseline)",
+   "1.0 / 0.9217"
+  ],
+  [
+   "Laundering chains",
+   "AUC without fee/timing/IP tells",
+   "0.9999"
+  ],
+  [
+   "Laundering chains",
+   "true laundering txs recovered / false-flag txs",
+   "0.876 / 0"
+  ],
+  [
+   "Risk scoring",
+   "fused: AUC / AP",
+   "0.9998 / 0.9909"
+  ],
+  [
+   "Risk scoring",
+   "taint_only: AUC / AP",
+   "0.9177 / 0.6155"
+  ],
+  [
+   "Risk scoring",
+   "pagerank_fwd_only: AUC / AP",
+   "0.9453 / 0.6588"
+  ],
+  [
+   "Risk scoring",
+   "hop_distance_only: AUC / AP",
+   "0.924 / 0.7574"
+  ],
+  [
+   "Risk scoring",
+   "behaviour_only: AUC / AP",
+   "0.997 / 0.9496"
+  ],
+  [
+   "Risk scoring",
+   "propagation_only: AUC / AP",
+   "0.9876 / 0.8643"
+  ],
+  [
+   "Risk scoring",
+   "no_network_features: AUC / AP",
+   "0.9995 / 0.9783"
+  ],
+  [
+   "Alerts",
+   "ENTITY_RISK leads / recall of illicit entities",
+   "37 / 0.881"
+  ],
+  [
+   "Alerts",
+   "precision@10 / @25 / @50",
+   "1.0 / 1.0 / 1.0"
+  ],
+  [
+   "Alerts",
+   "precision, score>=0.9 (n=31)",
+   "1.0"
+  ],
+  [
+   "Alerts",
+   "precision, 0.7-0.9 (n=6)",
+   "1.0"
+  ],
+  [
+   "Alerts",
+   "precision, 0.5-0.7 (n=0)",
+   "None"
+  ]
+ ]
+}
